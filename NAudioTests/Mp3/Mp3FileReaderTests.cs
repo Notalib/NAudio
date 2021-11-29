@@ -13,10 +13,32 @@ namespace NAudioTests.Mp3
     public class Mp3FileReaderTests
     {
         [Test]
+        public void CanGetFrames()
+        {
+            string inputFile = @"\\smb-dcsweb.ngt.dbb.dk\Dist1\UNI0\150__\15000\D202\dtb_0026.mp3";
+            TimeSpan excerptDuration = TimeSpan.FromMinutes(5);
+
+            using (FileStream outStream = File.Create("standardloadedframes.mp3"))
+            using (var reader = new Mp3FileReader(inputFile))
+            {
+                outStream.Write(reader.Id3v2Tag.RawData, 0, reader.Id3v2Tag.RawData.Length);
+
+                //reader.CurrentTime = TimeSpan.FromMinutes(2);
+
+                Mp3Frame frame = reader.ReadNextFrame();
+                while (frame != null && reader.CurrentTime < excerptDuration)
+                {
+                    outStream.Write(frame.RawData, 0, frame.RawData.Length);
+                    frame = reader.ReadNextFrame();
+                }
+            }
+        }
+
+        [Test]
         [Category("IntegrationTest")]
         public void CanLoadAndReadVariousProblemMp3Files()
         {
-            string testDataFolder = @"C:\Users\Mark\Downloads\NAudio";
+            string testDataFolder = @"C:\Users\B044551\Desktop\WmBatchTest\Input";
             if (!Directory.Exists(testDataFolder))
             {
                 Assert.Ignore("{0} not found", testDataFolder);
